@@ -28,15 +28,15 @@ void online_beamId()
 	// --- for unpacking ---------------------------------------- ---
 	// --- ------------------------------------------------------ ---	
 	// --- for local computer
-	TString filename = "~/data/s515/main*.lmd --allow-errors --input-buffer=50Mi"; 
-  TString ucesb_dir  = getenv("UCESB_DIR"); 
-  TString ucesb_path = ucesb_dir + "/../upexps/202104_s515/202104_s515";  
-  ucesb_path.ReplaceAll("//", "/");
+	//TString filename = "~/data/s515/main*.lmd --allow-errors --input-buffer=50Mi"; 
+  //TString ucesb_dir  = getenv("UCESB_DIR"); 
+  //TString ucesb_path = ucesb_dir + "/../upexps/202104_s515/202104_s515";  
+  //ucesb_path.ReplaceAll("//", "/");
 	
 	// --- land account
 	//TString filename = "/d/land5/202104_s515/lmd/main*.lmd --allow-errors --input-buffer=50Mi"; 
-	//TString filename = " --stream=lxir136:9001 --allow-errors --input-buffer=50Mi"; //PSPx and Incoming ID online analysis 
-	//TString ucesb_path = "/u/land/fake_cvmfs/9.13/upexps/202104_s515/202104_s515";
+	TString filename = " --stream=lxlanddaq01:9001 --allow-errors --input-buffer=50Mi"; //PSPx and Incoming ID online analysis 
+	TString ucesb_path = "/u/land/fake_cvmfs/9.13/upexps/202104_s515/202104_s515";
 	
 	TString ntuple_options = "RAW";                    // ntuple options for stitched data  
 	//TString ntuple_options = "RAW,time_stitch=1000"; // ntuple_options for raw data
@@ -165,7 +165,17 @@ void online_beamId()
   loss2online->SetEpileup(350.);  // Events with ToT>Epileup are not considered
   loss2online->SetTrigger(1);     // -1 = no trigger selection
 	loss2online->SetTpat(0);        // if 0, no tpat selection
-  //run->AddTask( loss2online );
+	// AoQ calibration :
+	loss2online->SetToFmin(-1000);
+	loss2online->SetToFmin(1000);
+  loss2online->SetTof2InvV_p0(-7.8);
+  loss2online->SetTof2InvV_p1(0.0073);
+	loss2online->SetFlightLength(137);
+	loss2online->SetPos_p0(-11.);
+	loss2online->SetPos_p1(54.7);
+	loss2online->SetDispersionS2(7000);
+	loss2online->SetBrho0_S2toCC(12.);
+	//run->AddTask( loss2online );
 
 	// --- -------------------------------------------------------- ---	
   // --- Initialize --------------------------------------------- --- 
