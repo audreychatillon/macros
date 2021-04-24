@@ -22,6 +22,12 @@ void calib_sci2(Int_t RunId = 1)
 	TStopwatch timer;
 	timer.Start();
 
+  auto t = std::time(nullptr);
+  auto tm = *std::localtime(&t);
+  std::ostringstream oss;
+  oss << std::put_time(&tm, "%Y%m%d_%H%M%S");
+	
+
 	const Int_t nev = -1; /* number of events to read, -1 - until CTRL+C */
 	
 	// --- ------------------------------------------------------ ---	
@@ -60,9 +66,6 @@ void calib_sci2(Int_t RunId = 1)
 	source->AddReader(new R3BUnpackReader(&ucesb_struct.unpack,offsetof(EXT_STR_h101_t, unpack)));
   source->AddReader( new R3BSci2Reader (&ucesb_struct.s2, offsetof(EXT_STR_h101_t, s2)) );
 
-
-  const Int_t refresh = 100;  /* refresh rate for saving */
-
   /* Create online run ------------------------------------ */
 #define RUN_ONLINE
 #define USE_HTTP_SERVER
@@ -77,7 +80,7 @@ void calib_sci2(Int_t RunId = 1)
   FairRunAna* run = new FairRunAna();
 #endif
 
-    run->SetOutputFile(outputFileName.Data());
+    run->SetOutputFile(outputFilename.Data());
 
 
 	/* Runtime data base ------------------------------------ */
@@ -123,7 +126,7 @@ void calib_sci2(Int_t RunId = 1)
 	Double_t ctime = timer.CpuTime();
 	cout << endl << endl;
 	cout << "Macro finished succesfully." << endl;
-	cout << "Output file is " << outputFileName << endl;
+	cout << "Output file is " << outputFilename << endl;
 	cout << "Real time " << rtime << " s, CPU time " << ctime << " s"
 		     << endl << endl;
 }
