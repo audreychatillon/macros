@@ -35,7 +35,7 @@ void online_beamId()
 	
 	// --- land account
 	//TString filename = "/d/land5/202104_s515/lmd/main*.lmd --allow-errors --input-buffer=50Mi"; 
-	//TString filename = " --stream=lxir136:9001 --allow-errors --input-buffer=50Mi"; 
+	//TString filename = " --stream=lxir136:9001 --allow-errors --input-buffer=50Mi"; //PSPx and Incoming ID online analysis 
 	//TString ucesb_path = "/u/land/fake_cvmfs/9.13/upexps/202104_s515/202104_s515";
 	
 	TString ntuple_options = "RAW";                    // ntuple options for stitched data  
@@ -98,16 +98,23 @@ void online_beamId()
 	auto parIOlos = new FairParRootFileIo(false); 
   parIOlos->open("parameter/tcal_los_pulser.root");
 	rtdb->setFirstInput(parIOlos);
-	rtdb->print();
 
-	// TO DO ADD S2 CALIBRATION PARAMETER 
+	// S2 CALIBRATION PARAMETER if ascii
 	// auto parIOs2 = new FairParAsciiFileIo();
 	// parIOs2->open("parameter/tcal_s2.par","in");
 	// rtdb->setSecondInput(parIOs2);
 
+	// S2 CALIBRATION PARAMETER 
+	auto parIOs2 = new FairParRootFileIo(false);
+	//parIOs2->open("parameter/tcal_s2.root");
+	//rtdb->setSecondInput(parIOs2);
+	
+	rtdb->print();
   rtdb->addRun(RunId);
   rtdb->getContainer("LosTCalPar");
   rtdb->setInputVersion(RunId, (char*)"LosTCalPar", 1, 1);
+  //rtdb->getContainer("Sci2TCalPar");
+  //rtdb->setInputVersion(RunId, (char*)"Sci2TCalPar", 1, 1);
 
 
 	// --- -------------------------------------------------------- ---	
@@ -119,7 +126,11 @@ void online_beamId()
   losMapped2Cal->SetNofModules(1,8);
   losMapped2Cal->SetTrigger(1);
   run->AddTask(losMapped2Cal);
-    
+  
+	// S2 Mapped -> Tcal
+	R3BSci2Mapped2Tcal* s2Mapped2Tcal = new R3BSci2Mapped2Tcal("Sci2Map2Tcal",1);
+	// run->AddTask(s2Mapped2Tcal); 
+ 
 	// --- -------------------------------------------------------- ---	
 	// --- Add online tasks --------------------------------------- --- 
 	// --- -------------------------------------------------------- ---	
@@ -144,6 +155,17 @@ void online_beamId()
 	run->AddTask(s2online);		
 
 	// --- LOS VS SCI2
+  R3BOnlineSpectraLosVsSci2* loss2online =new R3BOnlineSpectraLosVsSci2("OnlineSpectraLosVsSci2", 1); 
+	loss2online->SetNofLosModules(1); // 1 or 2 LOS detectors  
+  //  Set parameters for X,Y calibration
+  //  (offsetX, offsetY,VeffX,VeffY)
+  loss2online->SetLosXYTAMEX(0,0,1,1,0,0,1,1);
+  loss2online->SetLosXYMCFD(1.011,1.216,1.27,1.88,0,0,1,1);//(0.9781,1.152,1.5,1.5,0,0,1,1);                       
+  loss2online->SetLosXYToT(-0.002373,0.007423,2.27,3.22,0,0,1,1);//(-0.02054,-0.02495,2.5,3.6,0,0,1,1);
+  loss2online->SetEpileup(350.);  // Events with ToT>Epileup are not considered
+  loss2online->SetTrigger(1);     // -1 = no trigger selection
+	loss2online->SetTpat(0);        // if 0, no tpat selection
+  //run->AddTask( loss2online );
 
 	// --- -------------------------------------------------------- ---	
   // --- Initialize --------------------------------------------- --- 

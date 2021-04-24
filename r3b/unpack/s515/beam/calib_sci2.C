@@ -83,7 +83,7 @@ void calib_sci2(Int_t RunId = 1)
 	/* Runtime data base ------------------------------------ */
 	FairRuntimeDb* rtdb = run->GetRuntimeDb();
 	Bool_t kParameterMerged = kTRUE;
-	TString parFileName    = "parameter/tcal_s2_pulser.root";  // name of parameter file	"+runNumber+"
+	TString parFileName    = "parameter/tcal_s2.root";  // name of parameter file	"+runNumber+"
 	FairParRootFileIo* parOut = new FairParRootFileIo(kParameterMerged);
 	parOut->open(parFileName);
     rtdb->setFirstInput(parOut);
