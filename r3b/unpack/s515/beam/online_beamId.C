@@ -10,6 +10,7 @@ struct EXT_STR_h101_t
     EXT_STR_h101_LOS_t los;
     EXT_STR_h101_timestamp_master_t timestamp_master;
     EXT_STR_h101_SCI2_t s2;
+		EXT_STR_h101_MUSIC_onion_t music;
 };
 
 void online_beamId()
@@ -28,27 +29,28 @@ void online_beamId()
 	// --- for unpacking ---------------------------------------- ---
 	// --- ------------------------------------------------------ ---	
 	// --- for local computer
-	//TString filename = "~/data/s515/main045*.lmd --allow-errors --input-buffer=50Mi"; 
-  //TString ucesb_dir  = getenv("UCESB_DIR"); 
-  //TString ucesb_path = ucesb_dir + "/../upexps/202104_s515/202104_s515";  
-  //ucesb_path.ReplaceAll("//", "/");
+	//TString filename = "~/data/s515/calFrs/main0457_0001.lmd --allow-errors --input-buffer=50Mi"; 
+	TString filename = "~/data/s515/calFrs/main0461_0001_stitched.lmd --allow-errors --input-buffer=50Mi"; 
+  TString ucesb_dir  = getenv("UCESB_DIR"); 
+  TString ucesb_path = ucesb_dir + "/../upexps/202104_s515/202104_s515";  
+  ucesb_path.ReplaceAll("//", "/");
 	
 	// --- land account
 	//TString filename = "/d/land5/202104_s515/lmd/main*.lmd --allow-errors --input-buffer=50Mi"; 
-	TString filename = " --stream=lxlanddaq01:9001 --allow-errors --input-buffer=50Mi"; //PSPx and Incoming ID online analysis 
-	TString ucesb_path = "/u/land/fake_cvmfs/9.13/upexps/202104_s515/202104_s515";
+	//TString filename = " --stream=lxlanddaq01:9001 --allow-errors --input-buffer=50Mi"; //PSPx and Incoming ID online analysis 
+	//TString ucesb_path = "/u/land/fake_cvmfs/9.13/upexps/202104_s515/202104_s515";
 	
-	//TString ntuple_options = "RAW";                    // ntuple options for stitched data  
-	TString ntuple_options = "RAW,time_stitch=1000"; // ntuple_options for raw data
+	TString ntuple_options = "RAW";                    // ntuple options for stitched data  
+	//TString ntuple_options = "RAW,time_stitch=1000"; // ntuple_options for raw data
 
  
 	// --- ------------------------------------------------------ ---	
 	// --- check and modify if necessary ------------------------ ---
   // --- for online run --------------------------------------- --- 
 	// --- ------------------------------------------------------ ---	
-	//TString output_path = "~/data/s515/";
-	TString output_path = "/d/land5/202104_s515/rootfiles/beam/";
-	TString outputFilename = output_path+"s515_beamid_" + oss.str() + ".root";
+	TString output_path = "~/data/s515/";
+	//TString output_path = "/d/land5/202104_s515/rootfiles/beam/";
+	TString outputFilename = output_path+"s515_TofPt_stitched_461_" + oss.str() + ".root";
   const Int_t refresh = 1;                 
   Int_t port = 5555;
 
@@ -79,6 +81,7 @@ void online_beamId()
   source->AddReader(new R3BTimestampMasterReader((EXT_STR_h101_timestamp_master_t *)&ucesb_struct.timestamp_master,offsetof(EXT_STR_h101, timestamp_master)));
   source->AddReader( new R3BLosReader (&ucesb_struct.los, offsetof(EXT_STR_h101_t, los)) );
   source->AddReader( new R3BSci2Reader (&ucesb_struct.s2, offsetof(EXT_STR_h101_t, s2)) );
+	source->AddReader(new R3BMusicReader((EXT_STR_h101_MUSIC_t*)&ucesb_struct.music, offsetof(EXT_STR_h101, music)));
 
 	// --- -------------------------------------------------------- ---	
 	// --- Create online run -------------------------------------- ---
@@ -94,27 +97,28 @@ void online_beamId()
 	// --- -------------------------------------------------------- ---	
   auto rtdb = run->GetRuntimeDb();
 
-	// LOS CALIBRATION PARAMETERS
-	auto parIOlos = new FairParRootFileIo(false); 
-  parIOlos->open("parameter/tcal_los_pulser.root");
-	rtdb->setFirstInput(parIOlos);
+	// TCAL PARAMETERS
+	Bool_t kParameterMerged = kTRUE;
+  FairParRootFileIo* parTcal = new FairParRootFileIo(kParameterMerged);
+  TList *parList = new TList();
+  parList->Add(new TObjString("parameter/tcal_los_pulser.root"));
+	parList->Add(new TObjString("parameter/tcal_s2.root"));
+  parTcal->open(parList);
+  rtdb->setFirstInput(parTcal);
+	
 
-	// S2 CALIBRATION PARAMETER if ascii
+	// R3B-MUSIC CALIBRATION PARAMETER if ascii
 	// auto parIOs2 = new FairParAsciiFileIo();
 	// parIOs2->open("parameter/tcal_s2.par","in");
 	// rtdb->setSecondInput(parIOs2);
+	//auto parIOs2 = new FairParAsciiFileIo();
 
-	// S2 CALIBRATION PARAMETER 
-	auto parIOs2 = new FairParRootFileIo(false);
-	parIOs2->open("parameter/tcal_s2.root");
-	rtdb->setSecondInput(parIOs2);
-	
 	rtdb->print();
   rtdb->addRun(RunId);
   rtdb->getContainer("LosTCalPar");
   rtdb->setInputVersion(RunId, (char*)"LosTCalPar", 1, 1);
-  //rtdb->getContainer("Sci2TCalPar");
-  //rtdb->setInputVersion(RunId, (char*)"Sci2TCalPar", 1, 1);
+  rtdb->getContainer("Sci2TCalPar");
+  rtdb->setInputVersion(RunId, (char*)"Sci2TCalPar", 1, 1);
 
 
 	// --- -------------------------------------------------------- ---	
@@ -131,6 +135,7 @@ void online_beamId()
 	R3BSci2Mapped2Tcal* s2Mapped2Tcal = new R3BSci2Mapped2Tcal("Sci2Map2Tcal",1);
 	run->AddTask(s2Mapped2Tcal); 
  
+	
 	// --- -------------------------------------------------------- ---	
 	// --- Add online tasks --------------------------------------- --- 
 	// --- -------------------------------------------------------- ---	
@@ -166,15 +171,15 @@ void online_beamId()
   loss2online->SetTrigger(1);     // -1 = no trigger selection
 	loss2online->SetTpat(0);        // if 0, no tpat selection
 	// AoQ calibration :
-	loss2online->SetToFmin(-1000);
-	loss2online->SetToFmin(1000);
-  loss2online->SetTof2InvV_p0(-7.8);
-  loss2online->SetTof2InvV_p1(0.0073);
-	loss2online->SetFlightLength(137);
-	loss2online->SetPos_p0(-11.);
-	loss2online->SetPos_p1(54.7);
+	loss2online->SetToFmin(-8803);
+	loss2online->SetToFmin(-8801);
+  loss2online->SetTof2InvV_p0(67.69245);
+  loss2online->SetTof2InvV_p1(0.007198663);
+	loss2online->SetFlightLength(139.915);
+	loss2online->SetPos_p0(126.451);
+	loss2online->SetPos_p1(56.785);
 	loss2online->SetDispersionS2(7000);
-	loss2online->SetBrho0_S2toCC(12.);
+	loss2online->SetBrho0_S2toCC(9.458); // main 461
 	run->AddTask( loss2online );
 
 	// --- -------------------------------------------------------- ---	
