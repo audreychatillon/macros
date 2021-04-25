@@ -29,7 +29,7 @@ void online_beamId()
     // --- ------------------------------------------------------ ---
     // --- for local computer
     // TString filename = "~/data/s515/calFrs/main0457_0001.lmd --allow-errors --input-buffer=50Mi";
-    TString filename = "~/data/s515/calFrs/main0458_0001_stitched.lmd --allow-errors --input-buffer=50Mi";
+    TString filename = "~/data/s515/main0468_*.lmd --allow-errors --input-buffer=50Mi";
     TString ucesb_dir = getenv("UCESB_DIR");
     TString ucesb_path = ucesb_dir + "/../upexps/202104_s515/202104_s515";
     ucesb_path.ReplaceAll("//", "/");
@@ -48,7 +48,7 @@ void online_beamId()
     // --- ------------------------------------------------------ ---
     TString output_path = "~/data/s515/";
     // TString output_path = "/d/land5/202104_s515/rootfiles/beam/";
-    TString outputFilename = output_path + "s515_TofPt_stitched_458_" + oss.str() + ".root";
+    TString outputFilename = output_path + "s515_beamId_468_" + oss.str() + ".root";
     const Int_t refresh = 1;
     Int_t port = 5555;
 
@@ -173,15 +173,17 @@ void online_beamId()
     loss2online->SetTrigger(1);                                            // -1 = no trigger selection
     loss2online->SetTpat(0);                                               // if 0, no tpat selection
     // AoQ calibration :
-    loss2online->SetToFmin(-8803);
-    loss2online->SetToFmax(-8801);
+    loss2online->SetToFoffset(-14230.43); // to change when stop/start DAQ // main 468
+    loss2online->SetToFmin(5395);
+    loss2online->SetToFmax(5410);
     loss2online->SetTof2InvV_p0(67.69245);
     loss2online->SetTof2InvV_p1(0.007198663);
     loss2online->SetFlightLength(139.915);
     loss2online->SetPos_p0(126.451);
     loss2online->SetPos_p1(56.785);
     loss2online->SetDispersionS2(7000);
-    loss2online->SetBrho0_S2toCC(11.9891); // main 458
+    loss2online->SetBrho0_S2toCC(10.574); // main 468
+    //loss2online->SetBrho0_S2toCC(11.9891); // main 458
     // loss2online->SetBrho0_S2toCC(9.458); // main 461
     run->AddTask(loss2online);
 
