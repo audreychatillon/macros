@@ -30,7 +30,7 @@ void online_beamId()
 	// --- ------------------------------------------------------ ---	
 	// --- for local computer
 	//TString filename = "~/data/s515/calFrs/main0457_0001.lmd --allow-errors --input-buffer=50Mi"; 
-	TString filename = "~/data/s515/calFrs/main0461_0001_stitched.lmd --allow-errors --input-buffer=50Mi"; 
+	TString filename = "~/data/s515/calFrs/main0458_0001_stitched.lmd --allow-errors --input-buffer=50Mi"; 
   TString ucesb_dir  = getenv("UCESB_DIR"); 
   TString ucesb_path = ucesb_dir + "/../upexps/202104_s515/202104_s515";  
   ucesb_path.ReplaceAll("//", "/");
@@ -50,7 +50,7 @@ void online_beamId()
 	// --- ------------------------------------------------------ ---	
 	TString output_path = "~/data/s515/";
 	//TString output_path = "/d/land5/202104_s515/rootfiles/beam/";
-	TString outputFilename = output_path+"s515_TofPt_stitched_461_" + oss.str() + ".root";
+	TString outputFilename = output_path+"s515_TofPt_stitched_458_" + oss.str() + ".root";
   const Int_t refresh = 1;                 
   Int_t port = 5555;
 
@@ -108,10 +108,10 @@ void online_beamId()
 	
 
 	// R3B-MUSIC CALIBRATION PARAMETER if ascii
+  FairParAsciiFileIo* parMus = new FairParAsciiFileIo(); // Ascii
 	// auto parIOs2 = new FairParAsciiFileIo();
-	// parIOs2->open("parameter/tcal_s2.par","in");
-	// rtdb->setSecondInput(parIOs2);
-	//auto parIOs2 = new FairParAsciiFileIo();
+	parMus->open("parameter/CalibParam_onesci.par","in");
+	rtdb->setSecondInput(parMus);
 
 	rtdb->print();
   rtdb->addRun(RunId);
@@ -131,11 +131,18 @@ void online_beamId()
   losMapped2Cal->SetTrigger(1);
   run->AddTask(losMapped2Cal);
   
-	// S2 Mapped -> Tcal
+	// S2 Mapped2Tcal
 	R3BSci2Mapped2Tcal* s2Mapped2Tcal = new R3BSci2Mapped2Tcal("Sci2Map2Tcal",1);
 	run->AddTask(s2Mapped2Tcal); 
  
-	
+	// R3B-MUSIC Mapped2Cal
+  R3BMusicMapped2Cal* MusMap2Cal = new R3BMusicMapped2Cal();
+  run->AddTask(MusMap2Cal);
+
+	// R3B-MUSIC Cal2Hit	
+  R3BMusicCal2Hit* MusCal2Hit = new R3BMusicCal2Hit();
+  run->AddTask(MusCal2Hit);
+
 	// --- -------------------------------------------------------- ---	
 	// --- Add online tasks --------------------------------------- --- 
 	// --- -------------------------------------------------------- ---	
@@ -179,7 +186,8 @@ void online_beamId()
 	loss2online->SetPos_p0(126.451);
 	loss2online->SetPos_p1(56.785);
 	loss2online->SetDispersionS2(7000);
-	loss2online->SetBrho0_S2toCC(9.458); // main 461
+	loss2online->SetBrho0_S2toCC(11.9891); // main 458
+	//loss2online->SetBrho0_S2toCC(9.458); // main 461
 	run->AddTask( loss2online );
 
 	// --- -------------------------------------------------------- ---	
