@@ -190,11 +190,11 @@ void online_beamId()
     // --- -------------------------------------------------------- ---
     run->Init();
     rtdb->print();
-    FairLogger::GetLogger()->SetLogScreenLevel("INFO");
+    //FairLogger::GetLogger()->SetLogScreenLevel("INFO");
     // FairLogger::GetLogger()->SetLogScreenLevel("WARNING");
     // FairLogger::GetLogger()->SetLogScreenLevel("DEBUG");
     // FairLogger::GetLogger()->SetLogScreenLevel("DEBUG1");
-    // FairLogger::GetLogger()->SetLogScreenLevel("ERROR");
+    FairLogger::GetLogger()->SetLogScreenLevel("ERROR");
 
     // --- -------------------------------------------------------- ---
     // --- Run ---------------------------------------------------- ---
